@@ -1,9 +1,20 @@
 package src.app;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.*;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
@@ -16,20 +27,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.opencsv.*;
+import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 /**
  * @Author Adam Abbott
@@ -52,7 +50,7 @@ public class AmmoPriceChecker {
             driver = new ChromeDriver(options);
             driver.get(url);
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, 10);
             wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".ga-cpr")));
 
             List<WebElement> priceElements = driver.findElements(By.cssSelector(".ga-cpr"));
@@ -146,7 +144,7 @@ public class AmmoPriceChecker {
             yAxis.setNumberFormatOverride(new DecimalFormat("0.00¢"));
 
             try {
-                ChartUtils.saveChartAsPNG(new File("src/data/" + caliber + ".png"), chart, 800, 600);
+                ChartUtils.saveChartAsPNG(new File(caliber + ".png"), chart, 800, 600);
                 System.out.println("Chart created for " + caliber);
             } catch (Exception e) {
                 System.err.println("Error creating chart for " + caliber);
@@ -161,29 +159,31 @@ public class AmmoPriceChecker {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yy");
         String d = dateFormat.format(new Date());
 
+        String csvFile = "Test.csv";
+
         for (int i = 0; i < urls.length; i++) {
             
 
             if(urls[i].contains("9mm-luger")) {
-                BufferedWriter out = new BufferedWriter(new FileWriter("src/data/Test.csv", true));
+                BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
                 out.write("9mm," + d +","+ String.format("%.2f", getAveragePrice(urls[i])) + ",brass" );
                 out.flush();
                 out.close();
             } else if (urls[i].contains("223-remington")) {
-                BufferedWriter out = new BufferedWriter(new FileWriter("src/data/Test.csv", true));
+                BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
                 out.write(".223rem," + d +","+ String.format("%.2f", getAveragePrice(urls[i])) + ",brass" );
                 out.flush();
                 out.close();
             } else if (urls[i].contains("12-gauge")) {
-                BufferedWriter out = new BufferedWriter(new FileWriter("src/data/Test.csv", true));
+                BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
                 out.write("12-gauge," + d +","+ String.format("%.2f", getAveragePrice(urls[i])) + ",2.75" );
                 out.flush();
                 out.close();
             } else {
-                BufferedWriter out = new BufferedWriter(new FileWriter("src/data/Test.csv", true));
+                BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
                 out.write("0," + "0," + "0," + "0");
                 out.flush();
@@ -191,7 +191,7 @@ public class AmmoPriceChecker {
             }
         }
 
-        readCSV("src/data/Test.csv");
+        readCSV(csvFile);
         createCharts();
     }
 }
