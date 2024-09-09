@@ -1,4 +1,4 @@
-package src;
+package src.app;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import com.opencsv.*;
 import com.opencsv.exceptions.CsvValidationException;
@@ -191,14 +190,8 @@ public class AmmoPriceChecker {
                 out.close();
             }
         }
-        System.out.println("What is the path of the CSV file you want to read?");
-        String csvFile = new Scanner(System.in).nextLine();
 
-        readCSV(csvFile);
+        readCSV("src/data/Test.csv");
         createCharts();
-
-
-        
-        
     }
 }
