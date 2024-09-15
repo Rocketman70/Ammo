@@ -41,7 +41,7 @@ public class AmmoPriceChecker {
      * @return total/count - Returns the average price per round. 
      */
     private static double getAveragePrice(String url) {
-        System.setProperty("webdriver.chrome.driver", "/home/adamabbott/Documents/VSCode/Project1/lib/chromedriver-linux64/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "chromedriver");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");
 
