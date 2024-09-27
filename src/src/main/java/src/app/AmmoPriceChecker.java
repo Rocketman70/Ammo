@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -29,6 +27,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
+
 /**
  * @Author Adam Abbott
  */
@@ -37,8 +36,9 @@ public class AmmoPriceChecker {
 
     /**
      * 
-     * @param url - The URL given from the main method where it can find the proper fields (ga-cpr) or cents per round. 
-     * @return total/count - Returns the average price per round. 
+     * @param url - The URL given from the main method where it can find the proper
+     *            fields (ga-cpr) or cents per round.
+     * @return total/count - Returns the average price per round.
      */
     private static double getAveragePrice(String url) {
         System.setProperty("webdriver.chrome.driver", "chromedriver");
@@ -83,6 +83,7 @@ public class AmmoPriceChecker {
             }
         }
     }
+
     public static void readCSV(String csvFile) throws CsvValidationException {
         try (CSVReader reader = new CSVReader(new FileReader(csvFile))) {
             String[] nextLine;
@@ -112,74 +113,34 @@ public class AmmoPriceChecker {
         }
     }
 
-    private static Map<String, DefaultCategoryDataset> datasets = new HashMap<>();
-
-    public static void dataSet(String caliber, double cpr, String date) { 
-        DefaultCategoryDataset dataset = datasets.computeIfAbsent(caliber, k -> new DefaultCategoryDataset());
-        dataset.addValue(cpr, caliber, date);
-    }
-
-    public static void createCharts() {
-        for (Map.Entry<String, DefaultCategoryDataset> entry : datasets.entrySet()) {
-            String caliber = entry.getKey();
-            DefaultCategoryDataset dataset = entry.getValue();
-
-            JFreeChart chart = ChartFactory.createLineChart(
-                caliber + " Ammo Price Tracker",
-                "Date",
-                "Cents Per Round",
-                dataset,
-                PlotOrientation.VERTICAL,
-                true,
-                true,
-                false
-            );
-            LineAndShapeRenderer renderer = new LineAndShapeRenderer();
-            renderer.setDefaultShapesVisible(true);
-            chart.getCategoryPlot().setRenderer(renderer);
-
-
-            // Format Y-axis as currency
-            NumberAxis yAxis = (NumberAxis) chart.getCategoryPlot().getRangeAxis();
-            yAxis.setNumberFormatOverride(new DecimalFormat("0.00¢"));
-
-            try {
-                ChartUtils.saveChartAsPNG(new File(caliber + ".png"), chart, 800, 600);
-                System.out.println("Chart created for " + caliber);
-            } catch (Exception e) {
-                System.err.println("Error creating chart for " + caliber);
-                e.printStackTrace();
-            }
-        }
-    }
-
     public static void main(String[] args) throws IOException, CsvValidationException {
-        
-        String[] urls = {"https://ammoseek.com/ammo/9mm-luger?sh=lowest&ca=brass", "https://ammoseek.com/ammo/223-remington/-rifle-55grains?ca=brass&sh=lowest", "https://ammoseek.com/ammo/12-gauge?sl=2%203%2F4&sh=lowest"};
+
+        String[] urls = { "https://ammoseek.com/ammo/9mm-luger?sh=lowest&ca=brass",
+                "https://ammoseek.com/ammo/223-remington/-rifle-55grains?ca=brass&sh=lowest",
+                "https://ammoseek.com/ammo/12-gauge?sl=2%203%2F4&sh=lowest" };
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yy");
         String d = dateFormat.format(new Date());
 
         String csvFile = "Test.csv";
 
         for (int i = 0; i < urls.length; i++) {
-            
 
-            if(urls[i].contains("9mm-luger")) {
+            if (urls[i].contains("9mm-luger")) {
                 BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
-                out.write("9mm," + d +","+ String.format("%.2f", getAveragePrice(urls[i])) + ",brass" );
+                out.write("9mm," + d + "," + String.format("%.2f", getAveragePrice(urls[i])));
                 out.flush();
                 out.close();
             } else if (urls[i].contains("223-remington")) {
                 BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
-                out.write(".223rem," + d +","+ String.format("%.2f", getAveragePrice(urls[i])) + ",brass" );
+                out.write(".223rem," + d + "," + String.format("%.2f", getAveragePrice(urls[i])));
                 out.flush();
                 out.close();
             } else if (urls[i].contains("12-gauge")) {
                 BufferedWriter out = new BufferedWriter(new FileWriter(csvFile, true));
                 out.newLine();
-                out.write("12-gauge," + d +","+ String.format("%.2f", getAveragePrice(urls[i])) + ",2.75" );
+                out.write("12-gauge," + d + "," + String.format("%.2f", getAveragePrice(urls[i])));
                 out.flush();
                 out.close();
             } else {

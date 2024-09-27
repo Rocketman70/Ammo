@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ammo Price Checker</title>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,11 +49,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-top: 20px;
         }
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
         footer {
             text-align: center;
             margin-top: 20px;
@@ -67,13 +65,118 @@
         <a href="About.html">About</a>
     </nav>
     <main>
-        <p>This is a simple site that charts ammo prices from <a href="https://ammoseek.com/"> Ammo Seek </a></p>
-        <img src="/api/placeholder/600/400" alt="9mm Placeholder image">
-        <img src="/api/placeholder/600/400" alt=".223 Placeholder image">
-        <img src="/api/placeholder/600/400" alt="12 gauge Placeholder image">
+        <p>This is a simple site that charts ammo prices from <a href="https://ammoseek.com/">Ammo Seek</a></p>
+        <canvas id="myChart"></canvas>
     </main>
     <footer>
         <p>&copy; 2024 Ammo Price Checker. All rights reserved.</p>
     </footer>
+
+    <script>
+        // Embedded CSV data
+        const csvData = `caliber,date,cpr
+9mm,2023-01-01,0.30
+.223,2023-01-01,0.45
+12-gauge,2023-01-01,0.75
+9mm,2023-02-01,0.32
+.223,2023-02-01,0.47
+12-gauge,2023-02-01,0.78`;
+
+        // Function to manually parse the CSV data
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',').map(header => header.trim());
+            const data = new Map();
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(value => value.trim());
+                if (values.length === headers.length) {
+                    const caliber = values[0];
+                    const date = values[1];
+                    const cpr = parseFloat(values[2]);
+
+                    if (!data.has(caliber)) {
+                        data.set(caliber, new Map());
+                    }
+                    data.get(caliber).set(date, cpr);
+                }
+            }
+
+            return data;
+        }
+
+        // Function to prepare the data for Chart.js
+        function prepareData(data) {
+            const datasets = [];
+
+            for (const [caliber, dateMap] of data) {
+                const dataPoints = [];
+                for (const [date, cpr] of dateMap) {
+                    dataPoints.push({x: luxon.DateTime.fromISO(date), y: cpr});
+                }
+                datasets.push({
+                    label: caliber,
+                    data: dataPoints,
+                    fill: false,
+                    tension: 0.1
+                });
+            }
+
+            return {
+                datasets: datasets
+            };
+        }
+
+        // Function to create the chart
+        function createChart(data) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'CPR'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Main function to parse embedded CSV and create chart
+        function main() {
+            try {
+                const parsedData = parseCSV(csvData);
+                const chartData = prepareData(parsedData);
+                createChart(chartData);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Ensure the DOM is fully loaded before running our script
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Chart and luxon are defined
+            if (typeof Chart === 'undefined' || typeof luxon === 'undefined') {
+                console.error('Chart.js or Luxon is not loaded. Please check your internet connection and try again.');
+                return;
+            }
+            main();
+        });
+    </script>
 </body>
 </html>
